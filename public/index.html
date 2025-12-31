@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="url"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: block;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .media-preview {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .download-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+
+        .download-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .supported-platforms {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .platform-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 0;
+            }
+            
+            .header, .content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 Social Media Downloader</h1>
+            <p>Download videos and photos from Instagram, Twitter, YouTube, TikTok and more</p>
+        </div>
+
+        <div class="content">
+            <div class="form-group">
+                <label for="url">Paste your link here:</label>
+                <input type="url" id="url" placeholder="https://www.instagram.com/reel/..." required>
+            </div>
+
+            <div class="form-group">
+                <label for="platform">Select platform (or auto-detect):</label>
+                <select id="platform">
+                    <option value="auto">Auto Detect</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="twitter">Twitter/X</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="facebook">Facebook</option>
+                </select>
+            </div>
+
+            <div class="supported-platforms">
+                <span class="platform-tag">Instagram</span>
+                <span class="platform-tag">YouTube</span>
+                <span class="platform-tag">Twitter</span>
+                <span class="platform-tag">TikTok</span>
+                <span class="platform-tag">Facebook</span>
+                <span class="platform-tag">Pinterest</span>
+            </div>
+
+            <button id="downloadBtn" onclick="downloadContent()">
+                Download Content
+            </button>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Fetching content...</p>
+            </div>
+
+            <div id="error" class="error"></div>
+
+            <div id="result" class="result"></div>
+        </div>
+
+        <footer>
+            <p>© 2024 Social Media Downloader API | Privacy Friendly | No Data Storage</p>
+            <p style="margin-top: 10px; font-size: 12px; opacity: 0.7;">
+                Note: This tool respects copyright and platform terms of service. Use responsibly.
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        async function downloadContent() {
+            const url = document.getElementById('url').value;
+            const platform = document.getElementById('platform').value;
+            const button = document.getElementById('downloadBtn');
+            const loading = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            const errorDiv = document.getElementById('error');
+
+            // 重置状态
+            resultDiv.classList.remove('show');
+            errorDiv.classList.remove('show');
+            resultDiv.innerHTML = '';
+            errorDiv.textContent = '';
+
+            // 验证URL
+            if (!url) {
+                showError('Please enter a URL');
+                return;
+            }
+
+            if (!url.startsWith('http')) {
+                showError('Please enter a valid URL starting with http:// or https://');
+                return;
+            }
+
+            // 显示加载状态
+            button.disabled = true;
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        platform: platform
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Download failed');
+                }
+
+                displayResult(data);
+            } catch (error) {
+                showError(error.message || 'An error occurred. Please try again.');
+            } finally {
+                button.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function displayResult(data) {
+            const resultDiv = document.getElementById('result');
+            
+            let html = `
+                <h3>${data.title || 'Download Results'}</h3>
+                <p><strong>Author:</strong> ${data.author || 'Unknown'}</p>
+                <p><strong>Source:</strong> ${data.source || 'Unknown'}</p>
+            `;
+
+            if (data.thumbnail) {
+                html += `<img src="${data.thumbnail}" alt="Thumbnail" class="media-preview">`;
+            }
+
+            // 显示视频
+            if (data.medias?.videos?.length > 0) {
+                html += '<h4>Videos:</h4>';
+                data.medias.videos.forEach(video => {
+                    html += `
+                        <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 8px;">
+                            <p><strong>Quality:</strong> ${video.quality || 'N/A'}</p>
+                            <p><strong>Format:</strong> ${video.extension || 'mp4'}</p>
+                            <a href="${video.url}" class="download-button" download>
+                                Download Video
+                            </a>
+                        </div>
+                    `;
+                });
+            }
+
+            // 显示图片
+            if (data.medias?.images?.length > 0) {
+                html += '<h4>Images:</h4>';
+                data.medias.images.forEach(image => {
+                    html += `
+                        <div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 8px;">
+                            <img src="${image.url}" alt="Image" style="max-width: 100%; border-radius: 5px;">
+                            <br>
+                            <a href="${image.url}" class="download-button" download>
+                                Download Image
+                            </a>
+                        </div>
+                    `;
+                });
+            }
+
+            if (data.cached) {
+                html += '<p style="color: #666; font-size: 14px; margin-top: 20px;">⚡ Served from cache</p>';
+            }
+
+            resultDiv.innerHTML = html;
+            resultDiv.classList.add('show');
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        // 按Enter键触发下载
+        document.getElementById('url').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                downloadContent();
+            }
+        });
+    </script>
+</body>
+  </html>
